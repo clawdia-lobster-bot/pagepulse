@@ -1,4 +1,4 @@
-import { useState } from "react";
+"use client";
 
 export default function Home() {
   return (
