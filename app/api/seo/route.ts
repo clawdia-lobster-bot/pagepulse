@@ -95,7 +95,7 @@ function analyzeSEO(html: string, url: string) {
       score -= 10;
       report.recommendations.push("No <h1> detected");
     }
-    if (report.imgAlts.some(img => img.alt === null || img.alt === "")) {
+    if (report.imgAlts.some((img: { alt: string | null; src: string | null }) => img.alt === null || img.alt === "")) {
       score -= 5;
       report.recommendations.push("Some images missing alt text");
     }

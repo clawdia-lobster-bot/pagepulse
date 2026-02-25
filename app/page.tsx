@@ -83,12 +83,12 @@ export default function Home() {
               <div><strong>Mobile viewport:</strong> {report.viewport}</div>
               <div className="my-2"><strong>Open Graph tags:</strong>
                 <ul>
-                  {report.ogTags && Object.entries(report.ogTags).map(([k, v]: [string, string]) => <li key={k}><strong>{k}:</strong> {v}</li>)}
+                  {report.ogTags && Object.entries(report.ogTags).map(([k, v]) => <li key={k}><strong>{k}:</strong> {v as string}</li>)}
                 </ul>
               </div>
               <div className="my-2"><strong>Headings:</strong>
                 <ul>
-                  {report.headings && Object.entries(report.headings).map(([level, values]: [string, string[]]) => (
+                  {report.headings && Object.entries(report.headings).map(([level, values]) => (
                     <li key={level}><strong>{level}:</strong> {(values as string[]).join(", ")}</li>
                   ))}
                 </ul>
