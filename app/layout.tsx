@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <nav className="flex items-center px-6 pt-6 pb-2">
+          <a href="/">
+            <Image
+              src="/logo.png"
+              alt="PagePulse Logo"
+              width={48}
+              height={48}
+              priority
+            />
+          </a>
+          <span className="ml-3 text-xl font-bold text-blue-500">PagePulse</span>
+        </nav>
         {children}
       </body>
     </html>
