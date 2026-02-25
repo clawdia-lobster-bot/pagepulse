@@ -1,36 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
-export async function POST(req: NextRequest) {
-  const { plan = "pro" } = await req.json();
-
-  let priceId = null;
-  // In production, use environment/config to store Stripe price IDs
-  if (plan === "pro") {
-    priceId = "price_1T4nKtJsGDXMOz8jD3f7Wc6c"; // Updated to real Stripe Price ID
-  }
-
-  if (!priceId) {
-    return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
-  }
-
+export async function POST() {
   try {
     const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId,
+          price: process.env.STRIPE_PRICE_ID || "price_1T4nKtJsGDXMOz8jD3f7Wc6c",
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://pagepulse-tawny.vercel.app"}/success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://pagepulse-tawny.vercel.app"}/cancel`,
     });
     return NextResponse.json({ url: session.url });
-  } catch (err) {
-    return NextResponse.json({ error: "Stripe error", details: err }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

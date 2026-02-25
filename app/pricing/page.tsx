@@ -1,65 +1,119 @@
-import React from "react";
+"use client";
 import Link from "next/link";
 
 const plans = [
   {
     name: "Free",
-    price: 0,
-    freq: "/mo",
+    price: "$0",
+    period: "forever",
+    description: "Perfect for quick checks",
     features: [
       "1 audit per day",
-      "SEO report",
-      "Basic recommendations",
-      "Email support",
+      "Basic SEO report",
+      "Score + recommendations",
+      "7 key checks",
     ],
-    cta: "Get Started",
+    cta: "Start Free Audit",
     ctaLink: "/",
     highlight: false,
   },
   {
     name: "Pro",
-    price: 19,
-    freq: "/mo",
+    price: "$19",
+    period: "/month",
+    description: "For serious site owners",
     features: [
       "Unlimited audits",
-      "Advanced SEO report",
-      "Pro recommendations",
+      "Weekly automated reports",
+      "AI-powered fix suggestions",
+      "Competitor keyword tracking",
       "Priority support",
-      "Access upcoming features",
+      "API access",
     ],
-    cta: "Upgrade to Pro",
-    ctaLink: "/checkout?plan=pro",
+    cta: "Get Pro",
+    ctaLink: "/api/checkout",
     highlight: true,
   },
 ];
 
 export default function PricingPage() {
+  async function handleCheckout() {
+    try {
+      const res = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black p-8 flex flex-col items-center">
-      <h1 className="text-4xl font-extrabold mb-6 text-black dark:text-white">Pricing</h1>
-      <div className="flex flex-col sm:flex-row gap-8 w-full max-w-3xl justify-center">
+    <div className="min-h-[calc(100vh-73px)] flex flex-col items-center justify-center px-6 py-20">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
+          Simple, honest pricing
+        </h1>
+        <p className="text-lg text-slate-400 max-w-lg mx-auto">
+          Start free. Upgrade when your site deserves it.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-6 max-w-3xl w-full">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={
-              `flex flex-col border rounded-xl shadow-md px-8 py-8 items-center bg-white dark:bg-zinc-900 w-full sm:w-1/2 ` +
-              (plan.highlight ? "border-blue-500 shadow-lg scale-105" : "border-zinc-200 dark:border-zinc-700")
-            }
+            className={`card flex-1 p-8 flex flex-col ${plan.highlight ? "card-highlight" : ""}`}
           >
-            <h2 className="text-2xl font-bold mb-2 text-black dark:text-white">{plan.name}</h2>
-            <span className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-2">{plan.price ? `$${plan.price}` : "Free"}</span>
-            <span className="text-zinc-500 mb-6">{plan.freq}</span>
-            <ul className="mb-6 space-y-2 text-zinc-600 dark:text-zinc-300 text-left">
-              {plan.features.map((feature, idx) => (
-                <li key={idx}>• {feature}</li>
+            <div className="mb-6">
+              {plan.highlight && (
+                <span className="inline-block text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full mb-3">
+                  Most Popular
+                </span>
+              )}
+              <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+              <p className="text-slate-400 text-sm mt-1">{plan.description}</p>
+            </div>
+
+            <div className="mb-6">
+              <span className="text-4xl font-black text-white">{plan.price}</span>
+              <span className="text-slate-400 ml-1">{plan.period}</span>
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-1">
+              {plan.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm">
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${plan.highlight ? "bg-blue-500/20 text-blue-400" : "bg-white/5 text-slate-400"}`}>
+                    ✓
+                  </span>
+                  <span className="text-slate-300">{feature}</span>
+                </li>
               ))}
             </ul>
-            <Link href={plan.ctaLink} legacyBehavior>
-              <a className={`px-6 py-3 rounded-xl font-semibold transition text-white ` + (plan.highlight ? "bg-blue-600 hover:bg-blue-700" : "bg-zinc-600 hover:bg-zinc-700")}>{plan.cta}</a>
-            </Link>
+
+            {plan.highlight ? (
+              <button
+                onClick={handleCheckout}
+                className="btn-glow w-full py-3 rounded-xl text-white font-semibold text-center"
+              >
+                {plan.cta}
+              </button>
+            ) : (
+              <Link
+                href={plan.ctaLink}
+                className="w-full py-3 rounded-xl text-white font-semibold text-center bg-white/5 border border-white/10 hover:bg-white/10 transition block"
+              >
+                {plan.cta}
+              </Link>
+            )}
           </div>
         ))}
       </div>
+
+      <p className="text-sm text-slate-500 mt-8">
+        Cancel anytime · No hidden fees · Secure checkout via Stripe
+      </p>
     </div>
   );
 }

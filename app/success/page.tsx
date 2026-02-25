@@ -1,11 +1,18 @@
+import Link from "next/link";
+
 export default function SuccessPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 dark:bg-black">
-      <h1 className="text-3xl font-bold text-green-500 mb-4">Payment Successful!</h1>
-      <p className="text-lg text-zinc-700 dark:text-zinc-200 mb-8">
-        Thank you for upgrading to <strong>Pro</strong>! Your account now has access to unlimited audits and advanced SEO reports.
-      </p>
-      <a href="/" className="bg-blue-600 px-6 py-3 rounded-xl text-white font-semibold transition hover:bg-blue-700 mt-6">Go Back to Homepage</a>
+    <div className="min-h-[calc(100vh-73px)] flex flex-col items-center justify-center px-6 text-center">
+      <div className="card p-12 max-w-lg">
+        <div className="text-6xl mb-6">🎉</div>
+        <h1 className="text-3xl font-bold text-white mb-3">You&apos;re on Pro!</h1>
+        <p className="text-slate-400 mb-8">
+          Welcome aboard. You now have unlimited audits, weekly reports, and AI-powered fix suggestions.
+        </p>
+        <Link href="/" className="btn-glow inline-block px-8 py-3 rounded-xl text-white font-semibold">
+          Run Your First Pro Audit →
+        </Link>
+      </div>
     </div>
   );
 }
