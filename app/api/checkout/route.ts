@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   let priceId = null;
   // In production, use environment/config to store Stripe price IDs
   if (plan === "pro") {
-    priceId = "price_1PN1vFJhLqiv2pVvU2AA_TEST"; // Replace with real price id
+    priceId = "price_1T4nKtJsGDXMOz8jD3f7Wc6c"; // Updated to real Stripe Price ID
   }
 
   if (!priceId) {
