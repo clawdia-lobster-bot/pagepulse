@@ -171,6 +171,12 @@ export default function PricingPage() {
       <p className="text-sm text-slate-500">
         Secure checkout via Stripe · Cancel anytime · No hidden fees
       </p>
+      <p className="text-sm text-slate-500 mt-4">
+        Already a subscriber?{" "}
+        <Link href="/restore" className="text-blue-400 hover:underline">
+          Restore access →
+        </Link>
+      </p>
     </div>
   );
 }

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 async function fetchPage(url: string) {
   try {
@@ -176,14 +179,30 @@ function analyzeSEO(html: string, url: string, isPro: boolean, fetchTimeMs: numb
 }
 
 export async function POST(req: NextRequest) {
-  const { url, pro } = await req.json();
+  const { url, pro, customer_id } = await req.json();
   if (!url || !/^https?:\/\//i.test(url)) {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
   }
+
+  // Server-side pro verification
+  let verifiedPro = false;
+  if (pro && customer_id) {
+    try {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customer_id,
+        status: "active",
+        limit: 1,
+      });
+      verifiedPro = subscriptions.data.length > 0;
+    } catch {
+      verifiedPro = false;
+    }
+  }
+
   const result = await fetchPage(url);
   if (!result) {
     return NextResponse.json({ error: "Unable to fetch page" }, { status: 422 });
   }
-  const report = analyzeSEO(result.html, url, !!pro, result.fetchTimeMs);
+  const report = analyzeSEO(result.html, url, verifiedPro, result.fetchTimeMs);
   return NextResponse.json(report);
 }

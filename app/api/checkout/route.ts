@@ -8,6 +8,7 @@ export async function POST() {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
+      billing_address_collection: "auto",
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID || "price_1T4rh2JsGDXMOz8juDsqMwuw",

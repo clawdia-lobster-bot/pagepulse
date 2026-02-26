@@ -31,5 +31,10 @@ export async function POST(req: NextRequest) {
     console.log(`[PagePulse] Subscription cancelled: customer=${subscription.customer}`);
   }
 
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object as Stripe.Subscription;
+    console.log(`[PagePulse] Subscription updated: customer=${subscription.customer}, status=${subscription.status}`);
+  }
+
   return NextResponse.json({ received: true });
 }

@@ -165,6 +165,13 @@ export default function Home() {
     e.preventDefault();
     setRateLimitHit(false);
 
+    // Auto-prepend https:// if missing
+    let urlToAudit = auditUrl.trim();
+    if (urlToAudit && !/^https?:\/\//i.test(urlToAudit)) {
+      urlToAudit = "https://" + urlToAudit;
+      setAuditUrl(urlToAudit);
+    }
+
     // Rate limit check for free users
     const { allowed, remaining } = canAudit(isPro);
     if (!allowed) {
@@ -180,7 +187,7 @@ export default function Home() {
       const res = await fetch("/api/seo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: auditUrl, pro: isPro }),
+        body: JSON.stringify({ url: urlToAudit, pro: isPro, customer_id: localStorage.getItem("pp_customer_id") || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
@@ -233,8 +240,8 @@ export default function Home() {
         <form onSubmit={handleAudit} className="w-full max-w-xl mb-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
-              type="url"
-              placeholder="Enter your website URL..."
+              type="text"
+              placeholder="Enter your website URL (e.g. google.com)..."
               value={auditUrl}
               onChange={(e) => setAuditUrl(e.target.value)}
               required
