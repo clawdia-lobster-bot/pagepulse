@@ -3,7 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Link from "next/link";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID?.trim();
 
 export const metadata: Metadata = {
   title: "PagePulse — Stop losing traffic to SEO mistakes",
