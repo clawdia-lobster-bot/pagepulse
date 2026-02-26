@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
@@ -179,21 +180,27 @@ function analyzeSEO(html: string, url: string, isPro: boolean, fetchTimeMs: numb
 }
 
 export async function POST(req: NextRequest) {
-  const { url, pro, customer_id } = await req.json();
+  const { url, pro } = await req.json();
   if (!url || !/^https?:\/\//i.test(url)) {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
   }
 
   // Server-side pro verification
   let verifiedPro = false;
-  if (pro && customer_id) {
+  if (pro) {
     try {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customer_id,
-        status: "active",
-        limit: 1,
-      });
-      verifiedPro = subscriptions.data.length > 0;
+      const supabase = await createSupabaseServerClient();
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      const customerId = (user?.user_metadata as { stripe_customer_id?: string })?.stripe_customer_id;
+      if (user && customerId) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "active",
+          limit: 1,
+        });
+        verifiedPro = subscriptions.data.length > 0;
+      }
     } catch {
       verifiedPro = false;
     }

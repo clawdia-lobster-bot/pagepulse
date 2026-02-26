@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "verified" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "verified" | "pending" | "error">("loading");
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -15,21 +15,14 @@ function SuccessContent() {
       return;
     }
 
-    // Verify session and store customer info
-    fetch(`/api/subscription?session_id=${sessionId}`)
+    // Verify subscription for the logged-in user
+    fetch("/api/subscription")
       .then((res) => res.json())
       .then((data) => {
-        if (data.active && data.customer_id) {
-          localStorage.setItem("pp_customer_id", data.customer_id);
-          localStorage.setItem("pp_pro", "true");
-          setStatus("verified");
-        } else if (data.customer_id) {
-          // Subscription might not be active yet but we have the customer
-          localStorage.setItem("pp_customer_id", data.customer_id);
-          localStorage.setItem("pp_pro", "true");
+        if (data.active) {
           setStatus("verified");
         } else {
-          setStatus("error");
+          setStatus("pending");
         }
       })
       .catch(() => setStatus("error"));
@@ -53,6 +46,24 @@ function SuccessContent() {
           <div className="text-6xl mb-6">⚠️</div>
           <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
           <p className="text-slate-400 mb-8">We couldn&apos;t verify your subscription. If you were charged, please contact support.</p>
+          <Link href="/" className="btn-glow inline-block px-8 py-3 rounded-xl text-white font-semibold">
+            Go Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <div className="min-h-[calc(100vh-73px)] flex flex-col items-center justify-center px-6 text-center">
+        <div className="card p-12 max-w-lg">
+          <div className="text-4xl mb-4 animate-spin">⏳</div>
+          <h1 className="text-2xl font-bold text-white mb-3">We&apos;re activating Pro</h1>
+          <p className="text-slate-400 mb-8">
+            Your checkout is complete. It can take a few moments for the subscription to sync.
+            Refresh this page shortly, or head back to your dashboard.
+          </p>
           <Link href="/" className="btn-glow inline-block px-8 py-3 rounded-xl text-white font-semibold">
             Go Home
           </Link>

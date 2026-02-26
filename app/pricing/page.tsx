@@ -1,5 +1,8 @@
 "use client";
 import Link from "next/link";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 const faqs = [
   {
@@ -21,12 +24,21 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const router = useRouter();
+
   async function handleCheckout() {
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        router.push("/login?next=/pricing");
+        return;
+      }
+
       const res = await fetch("/api/checkout", { method: "POST" });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      const payload = await res.json();
+      if (payload.url) {
+        window.location.href = payload.url;
       }
     } catch (err) {
       console.error("Checkout error:", err);
@@ -170,12 +182,6 @@ export default function PricingPage() {
 
       <p className="text-sm text-slate-500">
         Secure checkout via Stripe · Cancel anytime · No hidden fees
-      </p>
-      <p className="text-sm text-slate-500 mt-4">
-        Already a subscriber?{" "}
-        <Link href="/restore" className="text-blue-400 hover:underline">
-          Restore access →
-        </Link>
       </p>
     </div>
   );

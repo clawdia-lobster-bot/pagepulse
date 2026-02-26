@@ -1,32 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
-export async function GET(req: NextRequest) {
-  const customerId = req.nextUrl.searchParams.get("customer_id");
-  const sessionId = req.nextUrl.searchParams.get("session_id");
-
-  if (!customerId && !sessionId) {
-    return NextResponse.json({ active: false, error: "No customer_id or session_id" }, { status: 400 });
-  }
-
+export async function GET() {
   try {
-    let custId = customerId;
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    const user = data.user;
 
-    // If we have a session_id, look up the customer from the session
-    if (sessionId && !custId) {
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      custId = session.customer as string;
+    if (!user) {
+      return NextResponse.json({ active: false });
     }
 
-    if (!custId) {
+    const customerId = (user.user_metadata as { stripe_customer_id?: string })?.stripe_customer_id;
+    if (!customerId) {
       return NextResponse.json({ active: false });
     }
 
     // Check for active subscriptions
     const subscriptions = await stripe.subscriptions.list({
-      customer: custId,
+      customer: customerId,
       status: "active",
       limit: 1,
     });
@@ -35,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       active,
-      customer_id: custId,
+      customer_id: customerId,
     });
   } catch (err: any) {
     return NextResponse.json({ active: false, error: err.message }, { status: 500 });

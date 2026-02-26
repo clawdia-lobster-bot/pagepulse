@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 function ScoreBadge({ score }: { score: number }) {
   const color = score >= 80 ? "score-green" : score >= 50 ? "score-yellow" : "score-red";
@@ -124,6 +125,7 @@ function canAudit(isPro: boolean): { allowed: boolean; remaining: number } {
 }
 
 export default function Home() {
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [auditUrl, setAuditUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
@@ -133,33 +135,50 @@ export default function Home() {
   const [auditsRemaining, setAuditsRemaining] = useState(3);
 
   useEffect(() => {
-    // Check pro status
-    const proFlag = localStorage.getItem("pp_pro");
-    const customerId = localStorage.getItem("pp_customer_id");
-    if (proFlag === "true" && customerId) {
-      // Verify with backend
-      fetch(`/api/subscription?customer_id=${customerId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.active) {
-            setIsPro(true);
-          } else {
-            // Subscription no longer active
-            localStorage.removeItem("pp_pro");
-            localStorage.removeItem("pp_customer_id");
-            setIsPro(false);
-          }
-        })
-        .catch(() => {
-          // If verification fails, still allow pro (graceful degradation)
-          setIsPro(true);
-        });
+    let active = true;
+
+    async function refreshSubscription() {
+      try {
+        const res = await fetch("/api/subscription");
+        const data = await res.json();
+        if (!active) return;
+        setIsPro(!!data.active);
+      } catch {
+        if (!active) return;
+        setIsPro(false);
+      }
     }
+
+    async function loadSession() {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user ?? null;
+      if (!active) return;
+      if (user) {
+        await refreshSubscription();
+      } else {
+        setIsPro(false);
+      }
+    }
+
+    loadSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        refreshSubscription();
+      } else {
+        setIsPro(false);
+      }
+    });
 
     // Update rate limit display
     const { remaining } = canAudit(false);
     setAuditsRemaining(remaining);
-  }, []);
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   async function handleAudit(e: React.FormEvent) {
     e.preventDefault();
@@ -187,7 +206,7 @@ export default function Home() {
       const res = await fetch("/api/seo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urlToAudit, pro: isPro, customer_id: localStorage.getItem("pp_customer_id") || undefined }),
+        body: JSON.stringify({ url: urlToAudit, pro: isPro }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");

@@ -1,28 +1,69 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 export default function Nav() {
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
-    const proFlag = localStorage.getItem("pp_pro");
-    const customerId = localStorage.getItem("pp_customer_id");
-    if (proFlag === "true" && customerId) {
-      setIsPro(true);
+    let active = true;
+
+    async function loadSession() {
+      const { data } = await supabase.auth.getSession();
+      const email = data.session?.user?.email ?? null;
+      if (!active) return;
+      setUserEmail(email);
+
+      if (email) {
+        try {
+          const res = await fetch("/api/subscription");
+          const result = await res.json();
+          if (!active) return;
+          setIsPro(!!result.active);
+        } catch {
+          if (!active) return;
+          setIsPro(false);
+        }
+      } else {
+        setIsPro(false);
+      }
     }
-  }, []);
+
+    loadSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const email = session?.user?.email ?? null;
+      setUserEmail(email);
+      if (email) {
+        loadSession();
+      } else {
+        setIsPro(false);
+      }
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   async function handlePortal() {
-    const customerId = localStorage.getItem("pp_customer_id");
-    if (!customerId) return;
     try {
-      const res = await fetch(`/api/portal?customer_id=${customerId}`);
+      const res = await fetch("/api/portal");
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error("Portal error:", err);
     }
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUserEmail(null);
+    setIsPro(false);
   }
 
   return (
@@ -39,25 +80,45 @@ export default function Nav() {
         <Link href="/pricing" className="text-sm font-medium text-slate-400 hover:text-white transition">
           Pricing
         </Link>
-        {isPro ? (
+        {userEmail ? (
           <>
+            {isPro ? (
+              <>
+                <button
+                  onClick={handlePortal}
+                  className="text-sm font-medium text-slate-400 hover:text-white transition"
+                >
+                  Manage Subscription
+                </button>
+                <span className="text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-4 py-2 rounded-lg">
+                  ⚡ Pro
+                </span>
+              </>
+            ) : (
+              <Link
+                href="/pricing"
+                className="text-sm font-medium bg-blue-600/10 text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600/20 transition border border-blue-500/20"
+              >
+                Get Pro
+              </Link>
+            )}
+            <span className="text-sm text-slate-400 hidden md:inline">
+              {userEmail}
+            </span>
             <button
-              onClick={handlePortal}
+              onClick={handleLogout}
               className="text-sm font-medium text-slate-400 hover:text-white transition"
             >
-              Manage Subscription
+              Logout
             </button>
-            <span className="text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-4 py-2 rounded-lg">
-              ⚡ Pro
-            </span>
           </>
         ) : (
           <>
-            <Link href="/restore" className="text-sm font-medium text-slate-400 hover:text-white transition">
-              Restore Pro
+            <Link href="/login" className="text-sm font-medium text-slate-400 hover:text-white transition">
+              Login
             </Link>
-            <Link href="/pricing" className="text-sm font-medium bg-blue-600/10 text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600/20 transition border border-blue-500/20">
-              Get Pro
+            <Link href="/signup" className="text-sm font-medium bg-blue-600/10 text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-600/20 transition border border-blue-500/20">
+              Sign Up
             </Link>
           </>
         )}
