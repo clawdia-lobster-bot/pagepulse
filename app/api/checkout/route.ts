@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+const PRICE_ID = process.env.STRIPE_PRICE_ID || "price_1T4rh2JsGDXMOz8juDsqMwuw";
 
 export async function POST() {
   try {
@@ -11,7 +12,7 @@ export async function POST() {
       billing_address_collection: "auto",
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID || "price_1T4rh2JsGDXMOz8juDsqMwuw",
+          price: PRICE_ID,
           quantity: 1,
         },
       ],
