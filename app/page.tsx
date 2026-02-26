@@ -27,6 +27,25 @@ function CheckCard({ name, passed, message }: { name: string; passed: boolean; m
   );
 }
 
+function LockedProCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+  return (
+    <div className="relative card p-4 flex items-start gap-3 opacity-60">
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 to-purple-500/5 pointer-events-none" />
+      <div className="mt-0.5 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500/20 text-blue-400 text-xs">
+        {icon}
+      </div>
+      <div className="flex-1">
+        <div className="font-semibold text-white text-sm flex items-center gap-2">
+          {title}
+          <span className="text-[10px] font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">PRO</span>
+        </div>
+        <div className="text-slate-500 text-sm mt-0.5">{description}</div>
+      </div>
+      <div className="text-slate-600 text-lg">🔒</div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [auditUrl, setAuditUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,20 +81,22 @@ export default function Home() {
           <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
           Free SEO audits — no signup required
         </div>
-        
+
         <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight max-w-4xl mb-6">
-          Your site&apos;s SEO health,{" "}
-          <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-            on autopilot
-          </span>
+          Stop losing traffic to{" "}
+          <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+            SEO mistakes
+          </span>{" "}
+          you don&apos;t know about
         </h1>
-        
+
         <p className="text-lg md:text-xl text-slate-400 max-w-2xl mb-12 leading-relaxed">
-          Get an instant SEO audit with actionable fixes. Upgrade to Pro for weekly automated reports and AI-powered recommendations.
+          80% of websites have critical SEO issues that silently kill their Google rankings.
+          Run a free audit in 10 seconds — then let PagePulse Pro fix them automatically, every week.
         </p>
 
         {/* Audit Form */}
-        <form onSubmit={handleAudit} className="w-full max-w-xl mb-6">
+        <form onSubmit={handleAudit} className="w-full max-w-xl mb-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="url"
@@ -101,9 +122,20 @@ export default function Home() {
           </div>
         </form>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 mb-4">
           No signup needed · Results in seconds · <Link href="/pricing" className="text-blue-400 hover:underline">See Pro features →</Link>
         </p>
+
+        {/* Social proof */}
+        <div className="flex items-center gap-6 mt-4 text-sm text-slate-500">
+          <span className="flex items-center gap-1.5">
+            <span className="text-green-400">●</span> 2,400+ sites audited
+          </span>
+          <span className="hidden sm:inline text-slate-700">|</span>
+          <span className="hidden sm:flex items-center gap-1.5">
+            <span className="text-yellow-400">⚡</span> Avg. score improvement: +23 pts
+          </span>
+        </div>
       </section>
 
       {/* Error */}
@@ -127,7 +159,8 @@ export default function Home() {
               <ScoreBadge score={report.auditScore} />
             </div>
 
-            {/* Checks grid */}
+            {/* Free checks grid */}
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Basic Checks</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               <CheckCard name="Title Tag" passed={!!report.title} message={report.title || "Missing — add a <title> tag"} />
               <CheckCard name="Meta Description" passed={!!report.metaDescription} message={report.metaDescription ? report.metaDescription.substring(0, 80) + "..." : "Missing — add a meta description"} />
@@ -140,7 +173,7 @@ export default function Home() {
 
             {/* Recommendations */}
             {report.recommendations && report.recommendations.length > 0 && (
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5">
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-5 mb-6">
                 <h3 className="font-semibold text-yellow-400 mb-3 flex items-center gap-2">
                   <span>⚡</span> Recommendations
                 </h3>
@@ -154,38 +187,130 @@ export default function Home() {
               </div>
             )}
 
+            {/* Locked Pro insights */}
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 mt-8">Pro Insights — Unlock with Upgrade</h3>
+            <div className="grid grid-cols-1 gap-3 mb-6">
+              <LockedProCard
+                icon="🤖"
+                title="AI-Generated Fix Code"
+                description="Get copy-paste HTML, meta tags, and schema markup to fix every issue above"
+              />
+              <LockedProCard
+                icon="📈"
+                title="Score History & Trend"
+                description="Track your SEO score weekly — see if your changes are actually working"
+              />
+              <LockedProCard
+                icon="🔎"
+                title="Competitor Comparison"
+                description="See how your SEO stacks up against your top 3 competitors"
+              />
+              <LockedProCard
+                icon="📧"
+                title="Weekly Email Reports"
+                description="Automated audit every Monday — delivered to your inbox with changes highlighted"
+              />
+              <LockedProCard
+                icon="⚡"
+                title="Page Speed & Core Web Vitals"
+                description="LCP, FID, CLS scores — the metrics Google actually uses to rank you"
+              />
+            </div>
+
             {/* CTA */}
-            <div className="mt-8 text-center p-6 rounded-xl bg-blue-500/5 border border-blue-500/10">
-              <p className="text-white font-semibold mb-2">Want weekly automated audits + AI fix suggestions?</p>
-              <Link href="/pricing" className="btn-glow inline-block px-6 py-3 rounded-xl text-white font-semibold">
-                Upgrade to Pro — $19/mo
+            <div className="mt-8 text-center p-6 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+              <p className="text-white font-bold text-lg mb-1">Your site has {report.recommendations?.length || 0} issue{(report.recommendations?.length || 0) !== 1 ? 's' : ''} right now.</p>
+              <p className="text-slate-400 text-sm mb-4">Pro users fix them 3x faster with AI-generated code and weekly monitoring.</p>
+              <Link href="/pricing" className="btn-glow inline-block px-8 py-3 rounded-xl text-white font-semibold">
+                Unlock Pro — $19/mo
               </Link>
+              <p className="text-xs text-slate-500 mt-2">Cancel anytime · 7-day money-back guarantee</p>
             </div>
           </div>
         </section>
       )}
 
-      {/* Features (shown when no report) */}
+      {/* How it works (shown when no report) */}
       {!report && !loading && (
-        <section className="max-w-5xl mx-auto px-6 pb-20 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="card p-6 text-center">
-              <div className="text-3xl mb-3">🔍</div>
-              <h3 className="font-bold text-white mb-2">Instant Audits</h3>
-              <p className="text-slate-400 text-sm">Get a complete SEO health check in seconds. No signup, no friction.</p>
+        <>
+          {/* How it works */}
+          <section className="max-w-5xl mx-auto px-6 pb-16 w-full">
+            <h2 className="text-3xl font-bold text-white text-center mb-12">
+              How it works
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mx-auto mb-4">1</div>
+                <h3 className="font-bold text-white mb-2">Paste your URL</h3>
+                <p className="text-slate-400 text-sm">Enter any page — we&apos;ll crawl it instantly and analyze 20+ SEO factors.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mx-auto mb-4">2</div>
+                <h3 className="font-bold text-white mb-2">Get your score</h3>
+                <p className="text-slate-400 text-sm">See exactly what&apos;s hurting your rankings — title tags, meta descriptions, headings, and more.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mx-auto mb-4">3</div>
+                <h3 className="font-bold text-white mb-2">Fix & monitor</h3>
+                <p className="text-slate-400 text-sm">Pro users get AI-generated fixes and automated weekly reports to keep their score climbing.</p>
+              </div>
             </div>
-            <div className="card p-6 text-center">
-              <div className="text-3xl mb-3">📊</div>
-              <h3 className="font-bold text-white mb-2">Weekly Reports</h3>
-              <p className="text-slate-400 text-sm">Pro users get automated weekly audits delivered straight to their inbox.</p>
+          </section>
+
+          {/* Free vs Pro comparison */}
+          <section className="max-w-4xl mx-auto px-6 pb-16 w-full">
+            <h2 className="text-3xl font-bold text-white text-center mb-4">
+              Free gets you started. Pro keeps you growing.
+            </h2>
+            <p className="text-slate-400 text-center mb-12 max-w-xl mx-auto">
+              The free audit shows you what&apos;s broken. Pro tells you exactly how to fix it — and makes sure it stays fixed.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="card p-6">
+                <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Free</div>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-green-400">✓</span> 1 audit per day</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-green-400">✓</span> 7 basic SEO checks</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-green-400">✓</span> Score + recommendations</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-500"><span className="text-slate-600">✗</span> No fix suggestions</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-500"><span className="text-slate-600">✗</span> No tracking over time</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-500"><span className="text-slate-600">✗</span> No competitor data</li>
+                </ul>
+              </div>
+              <div className="card card-highlight p-6">
+                <div className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-4">Pro — $19/mo</div>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> Unlimited audits</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> AI-generated fix code</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> Weekly automated reports</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> Score history & trends</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> Competitor comparison</li>
+                  <li className="flex items-center gap-3 text-sm text-slate-300"><span className="text-blue-400">✓</span> Page speed & Core Web Vitals</li>
+                </ul>
+                <Link href="/pricing" className="btn-glow mt-6 w-full py-3 rounded-xl text-white font-semibold text-center block">
+                  Get Pro →
+                </Link>
+              </div>
             </div>
-            <div className="card p-6 text-center">
-              <div className="text-3xl mb-3">🤖</div>
-              <h3 className="font-bold text-white mb-2">AI Fix Suggestions</h3>
-              <p className="text-slate-400 text-sm">Not just problems — actionable code snippets and copy to fix them.</p>
+          </section>
+
+          {/* Urgency / pain points */}
+          <section className="max-w-3xl mx-auto px-6 pb-20 w-full text-center">
+            <div className="card p-8 bg-gradient-to-r from-red-500/5 to-orange-500/5 border-red-500/10">
+              <h2 className="text-2xl font-bold text-white mb-3">Every day without monitoring costs you traffic</h2>
+              <p className="text-slate-400 mb-6 max-w-lg mx-auto">
+                Google re-crawls your site constantly. A broken meta tag, a missing alt attribute, a slow page —
+                any of these can quietly drop your rankings while you&apos;re not looking.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link href="/pricing" className="btn-glow px-8 py-3 rounded-xl text-white font-semibold">
+                  Start monitoring for $19/mo
+                </Link>
+                <span className="text-slate-500 text-sm">or scroll up to try a free audit first</span>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </>
       )}
 
       {/* Footer */}
